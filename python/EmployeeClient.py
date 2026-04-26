@@ -31,6 +31,27 @@ def run():
         response = stub.ListAllEmployees(EmployeeService_pb2.EmptyMessage())
         print ('All employees: ' + str(response))
 
+        # Update employee name and title at once
+        response = stub.UpdateEmployee(EmployeeService_pb2.EmployeeFullUpdate(id=101, name='Saravanan S', title='Principal Engineer'))
+        print ('Updated employee (name+title): ' + response.status)
+
+        # Search employees by partial name
+        response = stub.SearchEmployeesByName(EmployeeService_pb2.SearchQuery(name='Saravanan'))
+        print ('Search by name "Saravanan": ' + str(response))
+
+        # Stream all employees one by one (server-side streaming)
+        print ('Streaming all employees:')
+        for emp in stub.StreamAllEmployees(EmployeeService_pb2.EmptyMessage()):
+            print ('  ' + str(emp).strip())
+
+        # Batch create multiple employees (client-side streaming)
+        new_employees = iter([
+            EmployeeService_pb2.EmployeeData(id=401, name='Ana Lima', title='DevOps Engineer'),
+            EmployeeService_pb2.EmployeeData(id=501, name='Carlos Pereira', title='Data Scientist'),
+        ])
+        response = stub.BatchCreateEmployees(new_employees)
+        print ('Batch create status: ' + response.status)
+
 if __name__ == '__main__':
     logging.basicConfig()
     run()

@@ -51,9 +51,37 @@ class EmployeeServer(EmployeeService_pb2_grpc.EmployeeServiceServicer):
   def ListAllEmployees(self, request, context):
     list = EmployeeService_pb2.EmployeeDataList()
     for item in empDB:
-      emp_data = EmployeeService_pb2.EmployeeData(id=item['id'], name=item['name'], title=item['title']) 
+      emp_data = EmployeeService_pb2.EmployeeData(id=item['id'], name=item['name'], title=item['title'])
       list.employee_data.append(emp_data)
     return list
+
+  def UpdateEmployee(self, request, context):
+    usr = [emp for emp in empDB if emp['id'] == request.id]
+    if len(usr) == 0:
+      return EmployeeService_pb2.StatusReply(status='NOK')
+    usr[0]['name'] = request.name
+    usr[0]['title'] = request.title
+    return EmployeeService_pb2.StatusReply(status='OK')
+
+  def SearchEmployeesByName(self, request, context):
+    result = EmployeeService_pb2.EmployeeDataList()
+    for item in empDB:
+      if request.name.lower() in item['name'].lower():
+        result.employee_data.append(
+          EmployeeService_pb2.EmployeeData(id=item['id'], name=item['name'], title=item['title'])
+        )
+    return result
+
+  def StreamAllEmployees(self, request, context):
+    for item in empDB:
+      yield EmployeeService_pb2.EmployeeData(id=item['id'], name=item['name'], title=item['title'])
+
+  def BatchCreateEmployees(self, request_iterator, context):
+    count = 0
+    for request in request_iterator:
+      empDB.append({'id': request.id, 'name': request.name, 'title': request.title})
+      count += 1
+    return EmployeeService_pb2.StatusReply(status='OK:' + str(count))
 
 def serve():
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))

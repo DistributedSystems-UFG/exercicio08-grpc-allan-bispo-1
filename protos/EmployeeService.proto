@@ -18,7 +18,16 @@ service EmployeeService {
   rpc DeleteEmployee (EmployeeID) returns (StatusReply) {}
   // List all employees
   rpc ListAllEmployees (EmptyMessage) returns (EmployeeDataList) {}
-  
+
+  // Update an employee's name and title at once
+  rpc UpdateEmployee (EmployeeFullUpdate) returns (StatusReply) {}
+  // Search employees by partial name match
+  rpc SearchEmployeesByName (SearchQuery) returns (EmployeeDataList) {}
+  // Stream all employees one by one (server-side streaming)
+  rpc StreamAllEmployees (EmptyMessage) returns (stream EmployeeData) {}
+  // Create multiple employees in a single call (client-side streaming)
+  rpc BatchCreateEmployees (stream EmployeeData) returns (StatusReply) {}
+
 }
 
 message EmployeeData {
@@ -44,4 +53,14 @@ message EmptyMessage{}
 
 message EmployeeDataList{
   repeated EmployeeData employee_data = 1;
+}
+
+message EmployeeFullUpdate {
+  uint32 id = 1;
+  string name = 2;
+  string title = 3;
+}
+
+message SearchQuery {
+  string name = 1;
 }
